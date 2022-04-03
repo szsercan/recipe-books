@@ -1,13 +1,13 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, tap, throwError } from 'rxjs';
 
 export interface AuthResponse{
 
-  UserName:string,
-  AccessToken:string,
-  Expiration:string
-  RefreshToken:string,
+  userName:string,
+  accessToken:string,
+  expiration:string
+  refreshToken:string,
 }
 
 
@@ -25,7 +25,8 @@ export class AuthService {
       Email:email,
       Parola:password
     }).pipe(
-      catchError(this.handleError)
+      catchError(this.handleError),
+      tap(resData=>this.handleAuthentication(resData.accessToken,resData.refreshToken))
     );
   }
 
@@ -35,8 +36,15 @@ export class AuthService {
       Email:email,
       Parola:password
     }).pipe(
-      catchError(this.handleError)
+      catchError(this.handleError),
+      tap(resData=>this.handleAuthentication(resData.accessToken,resData.refreshToken))
     );
+  }
+
+  private handleAuthentication(accessToken:string,refreshToken:string)
+  {
+    localStorage.setItem("accessToken",accessToken);
+    localStorage.setItem("refreshToken",refreshToken);
   }
 
   private handleError(errorResponse:HttpErrorResponse){
